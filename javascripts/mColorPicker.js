@@ -39,16 +39,17 @@
       rRGB = /^rgb[a]?\((\d+),\s*(\d+),\s*(\d+)(,\s*(\d+\.\d+)*)?\)/,
       rHEX = /([a-f0-9])([a-f0-9])([a-f0-9])/,
       rHEX3 = /#[a-f0-9]{3}/,
-      rHEX6 = /#[a-f0-9]{6}/;
+      rHEX6 = /#[a-f0-9]{6}/,
+      swatchlength = 9;
 
   $.fn.mColorPicker = function(options) {
 
     var swatches = $.fn.mColorPicker.getCookie('swatches');
 
     $o = $.extend($.fn.mColorPicker.defaults, options);
-    $.fn.mColorPicker.defaults.swatches.concat($o.swatches).slice(-10);
+    $.fn.mColorPicker.defaults.swatches.concat($o.swatches).slice(-swatchlength);
 
-    if ($i.enhancedSwatches && swatches) $o.swatches = swatches.split('||').concat($o.swatches).slice(0, 10) || $o.swatches;
+    if ($i.enhancedSwatches && swatches) $o.swatches = swatches.split('||').concat($o.swatches).slice(0, swatchlength) || $o.swatches;
 
     if (!$("div#mColorPicker").length) $.fn.mColorPicker.drawPicker();
     if (!$('#css_disabled_color_picker').length) $('head').prepend('<meta data-remove-me="true"/><style id="css_disabled_color_picker" type="text/css">.mColorPicker[disabled] + span, .mColorPicker[disabled="disabled"] + span, .mColorPicker[disabled="true"] + span {filter:alpha(opacity=50);-moz-opacity:0.5;-webkit-opacity:0.5;-khtml-opacity: 0.5;opacity: 0.5;cursor:default;}</style>');
@@ -86,7 +87,6 @@
       "#ff0000",
       "#4c2b11",
       "#3b3b3b",
-      "#000000"
     ]
   };
 
@@ -181,7 +181,9 @@
       'class': 'mColorPickerTrigger'
     }).css({
       'display': 'inline-block',
-      'cursor': 'pointer'
+      'cursor': 'pointer',
+      'border-radius' : '15px',
+      '-moz-border-radius' : '15px'
     }).insertAfter($t)
     
     $(img).attr({
@@ -234,10 +236,10 @@
       'data-mcolorpicker': true
     }).css({
       'position':'absolute',
-      'border':'1px solid #ccc',
+//      'border':'1px solid #ccc',
       'color':'#fff',
       'width':'194px',
-      'height':'184px',
+      'height':'24px',
       'font-size':'12px',
       'font-family':'times',
       'display': 'none'
@@ -253,24 +255,13 @@
       'id': 'mColorPickerWrapper'
     }).css({
       'position':'relative',
-      'border':'solid 1px gray'
+      //'border':'solid 1px gray'
     }).appendTo($mColorPicker);
-
-    $(div).attr({
-      'id': 'mColorPickerImg',
-      'class': 'mColor'
-    }).css({
-      'height': '136px',
-      'width': '192px',
-      'border': 0,
-      'cursor': 'crosshair',
-      'background-image': 'url(' + $o.imageFolder + 'picker.png)'
-    }).appendTo($w);
 
     $s.attr({
       'id': 'mColorPickerSwatches'
     }).css({
-      'border-right':'1px solid #000'
+    //  'border-right':'1px solid #000'
     }).appendTo($w);
 
     $(div).addClass(
@@ -279,7 +270,7 @@
       'clear': 'both'
     }).appendTo($s);
 
-    for (i = 9; i > -1; i--) {
+    for (i = (swatchlength-1); i > -1; i--) {
 
       $(div).attr({
         'id': 'cell' + i,
@@ -288,21 +279,15 @@
         'background-color': $o.swatches[i].toLowerCase(),
         'height':'18px',
         'width':'18px',
-        'border':'1px solid #000',
+        'border':'1px solid #222',
+//        '-moz-border-radius': '10px',
+//        'border-radius' : '10px',
         'float':'left'
       }).html(
         '&nbsp;'
       ).prependTo($s);
     }
-
-    $f.attr({
-      'id': 'mColorPickerFooter'
-    }).css({
-      'background-image': 'url(' + $o.imageFolder + 'grid.gif)',
-      'position': 'relative',
-      'height': '26px'
-    }).appendTo($w);
-
+    
     $mColorPickerInput.attr({
       'id': 'mColorPickerInput',
       'type': 'text'
@@ -469,7 +454,7 @@
 
       $o.color = $t.css('background-color').toLowerCase();
 
-      if ($o.color != swatch[0] && $.fn.mColorPicker.RGBtoHex($o.color) != swatch[0] && $.fn.mColorPicker.hexToRGB($o.color) != swatch[0] && swatch.length < 10) swatch[swatch.length] = $o.color;
+      if ($o.color != swatch[0] && $.fn.mColorPicker.RGBtoHex($o.color) != swatch[0] && $.fn.mColorPicker.hexToRGB($o.color) != swatch[0] && swatch.length < swatchlength) swatch[swatch.length] = $o.color;
   
       $(this).css('background-color', swatch[i++])
     });
