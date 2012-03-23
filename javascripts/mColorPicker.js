@@ -149,7 +149,7 @@
       $o.currentInput.mSetInputColor($o.color);
     });
   
-    $('#mColorPickerWrapper').live('mouseleave', function () {
+    $('#mColorPickerWrapper').live('mouseout', function () {
   
       if (!$o.changeColor) return false;
 
