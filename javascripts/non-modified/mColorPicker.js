@@ -62,7 +62,7 @@
   };
 
   $.fn.mColorPicker.init = {
-    replace: '[type=image]',
+    replace: '[type=color]',
     index: 0,
     enhancedSwatches: true,
     allowTransparency: true,
@@ -76,7 +76,7 @@
     currentColor: false,
     changeColor: false,
     color: false,
-    imageFolder: '/ts_includes/images/',
+    imageFolder: 'images/',
     swatches: [
       "#ffffff",
       "#ffff00",
@@ -94,7 +94,7 @@
 
     $('input[data-mcolorpicker!="true"]').filter(function() {
   
-      return ($i.replace == '[type=image]')? this.getAttribute("type") == 'color': $(this).is($i.replace);
+      return ($i.replace == '[type=color]')? this.getAttribute("type") == 'color': $(this).is($i.replace);
     }).mColorPicker();
   };
 
@@ -171,42 +171,40 @@
         colorPicker = '',
         $e;
 
-    $t.attr({'class' : 'mColorPickerTrigger'}).css({ 'cursor' : 'pointer' });
     $c.attr({
       'id': 'color_work_area',
       'class': 'mColorPickerInput'
     }).appendTo($b)
 
-    $trigger.insertAfter($t);
-    //$trigger.attr({
-    //  'id': 'mcp_' + id,
-    //  'class': 'mColorPickerTrigger'
-    //}).css({
-    //  'display': 'inline-block',
-    //  'cursor': 'pointer'
-    ////  'border-radius' : '15px',
-    ////  '-moz-border-radius' : '15px'
-    //}).insertAfter($t);
+    $trigger.attr({
+      'id': 'mcp_' + id,
+      'class': 'mColorPickerTrigger'
+    }).css({
+      'display': 'inline-block',
+      'cursor': 'pointer',
+      'border-radius' : '15px',
+      '-moz-border-radius' : '15px'
+    }).insertAfter($t)
     
-    //$(img).attr({
-    //  'src': $o.imageFolder + 'color.png'
-    //}).css({
-    //  'border': 0,
-    //  'margin': '0 0 0 3px',
-    //  'vertical-align': 'text-bottom'
-    //}).appendTo($trigger);
+    $(img).attr({
+      'src': $o.imageFolder + 'color.png'
+    }).css({
+      'border': 0,
+      'margin': '0 0 0 3px',
+      'vertical-align': 'text-bottom'
+    }).appendTo($trigger);
 
     $c.append($t);
     colorPicker = $c.html().replace(/type="color"/gi, 'type="' + (hidden? 'hidden': 'text') + '"');
     $c.html('').remove();
     $e = $(colorPicker).attr('id', id).addClass('mColorPicker').val(color).insertBefore($trigger);
 
-    //if (hidden) $trigger.css({
-    //  'border': '1px solid black',
-    //  'float': flt,
-    //  'width': width,
-    //  'height': height
-    //}).addClass($e.attr('class')).html('&nbsp;');
+    if (hidden) $trigger.css({
+      'border': '1px solid black',
+      'float': flt,
+      'width': width,
+      'height': height
+    }).addClass($e.attr('class')).html('&nbsp;');
 
     $e.mSetInputColor(color);
 
@@ -256,7 +254,7 @@
     $w.attr({
       'id': 'mColorPickerWrapper'
     }).css({
-      'position':'relative'
+      'position':'relative',
       //'border':'solid 1px gray'
     }).appendTo($mColorPicker);
 
