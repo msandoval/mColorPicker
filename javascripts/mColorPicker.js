@@ -40,7 +40,7 @@
       rHEX = /([a-f0-9])([a-f0-9])([a-f0-9])/,
       rHEX3 = /#[a-f0-9]{3}/,
       rHEX6 = /#[a-f0-9]{6}/,
-      swatchlength = 9;
+      swatchlength = 10;
 
   $.fn.mColorPicker = function(options) {
 
@@ -78,15 +78,16 @@
     color: false,
     imageFolder: '/ts_includes/images/',
     swatches: [
-      "#ffffff",
-      "#ffff00",
-      "#00ff00",
+      "",
+      "#FFFFFF",
+      "#ff0000",
+      "#e18d00",
       "#00ffff",
       "#0000ff",
       "#ff00ff",
-      "#ff0000",
-      "#4c2b11",
-      "#3b3b3b",
+      "#ffff00",
+      "#00FF00",
+      "#FFCCFF",
     ]
   };
 
@@ -273,8 +274,7 @@
     }).appendTo($s);
 
     for (i = (swatchlength-1); i > -1; i--) {
-
-      $(div).attr({
+      var boo = $(div).attr({
         'id': 'cell' + i,
         'class': "mPastColor" + ((i > 0)? ' mNoLeftBorder': '')
       }).css({
@@ -282,12 +282,14 @@
         'height':'18px',
         'width':'18px',
         'border':'1px solid #222',
-//        '-moz-border-radius': '10px',
-//        'border-radius' : '10px',
         'float':'left'
       }).html(
         '&nbsp;'
-      ).prependTo($s);
+      );
+      if(i == 0) {
+        boo.attr('title', 'Cancel Mood').css({ 'background-image' : 'url(/ts_includes/images/cancel.gif)', 'background-repeat' : 'no-repeat', 'background-position' : 'center'  });
+      }
+      boo.prependTo($s);
     }
     
     $mColorPickerInput.attr({
@@ -391,7 +393,11 @@
     var $t = $(this),
         css = {
           'background-color': color,
-          'background-image': (color == 'transparent')? "url('" + $o.imageFolder + "grid.gif')": '',
+//          'background-image': (color == 'transparent')? "url('" + $o.imageFolder + "grid.gif')": '',
+          'background-image': (color == 'transparent')? "url('" + $o.imageFolder + "color.png')": '',
+          'background-repeat' : 'no-repeat',
+          'background-position': 'center',
+          'background-size' : '25px 25px',
           'color': $.fn.mColorPicker.textColor(color)
         };
   
