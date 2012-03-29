@@ -40,7 +40,7 @@
       rHEX = /([a-f0-9])([a-f0-9])([a-f0-9])/,
       rHEX3 = /#[a-f0-9]{3}/,
       rHEX6 = /#[a-f0-9]{6}/,
-      swatchlength = 10;
+      swatchlength = 9;
 
   $.fn.mColorPicker = function(options) {
 
@@ -79,7 +79,6 @@
     imageFolder: '/ts_includes/images/',
     swatches: [
       "",
-      "#FFFFFF",
       "#ff0000",
       "#e18d00",
       "#00ffff",
@@ -87,7 +86,7 @@
       "#ff00ff",
       "#ffff00",
       "#00FF00",
-      "#FFCCFF",
+      "#5927a4",
     ]
   };
 
@@ -257,7 +256,8 @@
     $w.attr({
       'id': 'mColorPickerWrapper'
     }).css({
-      'position':'relative'
+      'position':'relative',
+      'left' : '-73px'
       //'border':'solid 1px gray'
     }).appendTo($mColorPicker);
 
@@ -265,6 +265,7 @@
       'id': 'mColorPickerSwatches'
     }).css({
     //  'border-right':'1px solid #000'
+    'left' : '-60px'
     }).appendTo($w);
 
     $(div).addClass(
@@ -278,18 +279,22 @@
         'id': 'cell' + i,
         'class': "mPastColor" + ((i > 0)? ' mNoLeftBorder': '')
       }).css({
-        'background-color': $o.swatches[i].toLowerCase(),
+        'background-color': $o.swatches[i].toLowerCase() ? $o.swatches[i].toLowerCase() : 'transparent',
         'height':'18px',
         'width':'18px',
         'border':'1px solid #222',
+        'cursor' : 'pointer',
         'float':'left'
       }).html(
         '&nbsp;'
-      );
+      ).bind('click', { 'i' : i, 'o' : $o}, function(e) { });//alert(e.data.o.swatches[e.data.i].toLowerCase()); });
+
+      
       if(i == 0) {
-        boo.attr('title', 'Cancel Mood').css({ 'background-image' : 'url(/ts_includes/images/cancel.gif)', 'background-repeat' : 'no-repeat', 'background-position' : 'center'  });
+        boo.attr('title', 'Disable').css({ 'background-image' : 'url(/ts_includes/images/cancel.gif)', 'background-repeat' : 'no-repeat', 'background-position' : 'center'  });
       }
       boo.prependTo($s);
+
     }
     
     $mColorPickerInput.attr({
@@ -392,14 +397,17 @@
   
     var $t = $(this),
         css = {
-          'background-color': color,
+//          'background-color': color,
+          'background-color': (color == 'transparent')? '#CCCCCC' : color,
 //          'background-image': (color == 'transparent')? "url('" + $o.imageFolder + "grid.gif')": '',
-          'background-image': (color == 'transparent')? "url('" + $o.imageFolder + "color.png')": '',
+//          'background-image': (color == 'transparent')? "url('" + $o.imageFolder + "color.png')": '',
           'background-repeat' : 'no-repeat',
           'background-position': 'center',
           'background-size' : '25px 25px',
           'color': $.fn.mColorPicker.textColor(color)
         };
+
+    $t.attr('title', 'Choose..');
   
     if ($t.attr('data-text') || $t.attr('text')) $t.next().css(css);
 
