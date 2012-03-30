@@ -44,12 +44,12 @@
 
   $.fn.mColorPicker = function(options) {
 
-    var swatches = $.fn.mColorPicker.getCookie('swatches');
+    var swatches = null;
 
     $o = $.extend($.fn.mColorPicker.defaults, options);
     $.fn.mColorPicker.defaults.swatches.concat($o.swatches).slice(-swatchlength);
 
-    if ($i.enhancedSwatches && swatches) $o.swatches = swatches.split('||').concat($o.swatches).slice(0, swatchlength) || $o.swatches;
+//    if ($i.enhancedSwatches && swatches) $o.swatches = swatches.split('||').concat($o.swatches).slice(0, swatchlength) || $o.swatches;
 
     if (!$("div#mColorPicker").length) $.fn.mColorPicker.drawPicker();
     if (!$('#css_disabled_color_picker').length) $('head').prepend('<meta data-remove-me="true"/><style id="css_disabled_color_picker" type="text/css">.mColorPicker[disabled] + span, .mColorPicker[disabled="disabled"] + span, .mColorPicker[disabled="true"] + span {filter:alpha(opacity=50);-moz-opacity:0.5;-webkit-opacity:0.5;-khtml-opacity: 0.5;opacity: 0.5;cursor:default;}</style>');
@@ -115,7 +115,7 @@
     });
 
     $('.mColorPickerTrigger').live('click', $.fn.mColorPicker.colorShow);
-  
+
     $('.mColor, .mPastColor').live('mousemove', function(e) {
 
       if (!$o.changeColor) return false;
@@ -425,24 +425,6 @@
     return (parseInt(val.substr(1, 2), 16) + parseInt(val.substr(3, 2), 16) + parseInt(val.substr(5, 2), 16) < 400)? 'white': 'black';
   };
 
-  $.fn.mColorPicker.setCookie = function (name, value, days) {
-  
-    var cookie_string = name + "=" + escape(value),
-      expires = new Date();
-      expires.setDate(expires.getDate() + days);
-    cookie_string += "; expires=" + expires.toGMTString();
-   
-    document.cookie = cookie_string;
-  };
-
-  $.fn.mColorPicker.getCookie = function (name) {
-  
-    var results = document.cookie.match ( '(^|;) ?' + name + '=([^;]*)(;|$)' );
-  
-    if (results) return (unescape(results[2]));
-    else return null;
-  };
-
   $.fn.mColorPicker.colorPicked = function () {
 
     $o.changeColor = false;
@@ -475,7 +457,6 @@
       $(this).css('background-color', swatch[i++])
     });
 
-    if ($i.enhancedSwatches) $.fn.mColorPicker.setCookie('swatches', swatch.join('||'), 365);
   };
 
   $.fn.mColorPicker.whichColor = function (x, y, hex) {
