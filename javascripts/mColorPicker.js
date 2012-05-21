@@ -40,16 +40,19 @@
       rHEX = /([a-f0-9])([a-f0-9])([a-f0-9])/,
       rHEX3 = /#[a-f0-9]{3}/,
       rHEX6 = /#[a-f0-9]{6}/,
-      swatchlength = 9;
+      swatchlength = 8,
+      sct = 0,
+      lastclicked;
 
   $.fn.mColorPicker = function(options) {
 
     var swatches = null;
 
     $o = $.extend($.fn.mColorPicker.defaults, options);
+
     $.fn.mColorPicker.defaults.swatches.concat($o.swatches).slice(-swatchlength);
 
-//    if ($i.enhancedSwatches && swatches) $o.swatches = swatches.split('||').concat($o.swatches).slice(0, swatchlength) || $o.swatches;
+    //if ($i.enhancedSwatches && swatches) $o.swatches = swatches.split('||').concat($o.swatches).slice(0, swatchlength) || $o.swatches;
 
     if (!$("div#mColorPicker").length) $.fn.mColorPicker.drawPicker();
     if (!$('#css_disabled_color_picker').length) $('head').prepend('<meta data-remove-me="true"/><style id="css_disabled_color_picker" type="text/css">.mColorPicker[disabled] + span, .mColorPicker[disabled="disabled"] + span, .mColorPicker[disabled="true"] + span {filter:alpha(opacity=50);-moz-opacity:0.5;-webkit-opacity:0.5;-khtml-opacity: 0.5;opacity: 0.5;cursor:default;}</style>');
@@ -64,10 +67,10 @@
   $.fn.mColorPicker.init = {
     replace: '[type=image]',
     index: 0,
-    enhancedSwatches: true,
+    enhancedSwatches: false,
     allowTransparency: true,
     slogan: 'Meta100 - Designing Fun',
-    showLogo: true
+    showLogo: false
   };
 
   $.fn.mColorPicker.defaults = {
@@ -80,16 +83,16 @@
     swatches: [
       "",
       "#ff0000",
-      "#e18d00",
-      "#00ffff",
+      "#00ff00",
       "#0000ff",
-      "#ff00ff",
-      "#ffff00",
-      "#00FF00",
-      "#5927a4",
+      "#7204ff",
+      "#ff4605",
+      "#f004ff",
+      "#d9d904",
     ]
   };
 
+  
   $.fn.mColorPicker.start = function() {
 
     $('input[data-mcolorpicker!="true"]').filter(function() {
@@ -114,7 +117,8 @@
       } catch (r) {}
     });
 
-    $('.mColorPickerTrigger').live('click', $.fn.mColorPicker.colorShow);
+    $('.mColorPickerTrigger').live('click', $.fn.mColorPicker.colorShow).live('mousedown', function(e) { lastclicked = $(this) });
+    
 
     $('.mColor, .mPastColor').live('mousemove', function(e) {
 
@@ -170,7 +174,7 @@
         $trigger = $(span),
         colorPicker = '',
         $e;
-
+    
     $t.attr({'class' : 'mColorPickerTrigger'}).css({ 'cursor' : 'pointer' });
     $c.attr({
       'id': 'color_work_area',
@@ -178,39 +182,58 @@
     }).appendTo($b)
 
     $trigger.insertAfter($t);
-    //$trigger.attr({
-    //  'id': 'mcp_' + id,
-    //  'class': 'mColorPickerTrigger'
-    //}).css({
-    //  'display': 'inline-block',
-    //  'cursor': 'pointer'
-    ////  'border-radius' : '15px',
-    ////  '-moz-border-radius' : '15px'
-    //}).insertAfter($t);
-    
-    //$(img).attr({
-    //  'src': $o.imageFolder + 'color.png'
-    //}).css({
-    //  'border': 0,
-    //  'margin': '0 0 0 3px',
-    //  'vertical-align': 'text-bottom'
-    //}).appendTo($trigger);
 
     $c.append($t);
     colorPicker = $c.html().replace(/type="color"/gi, 'type="' + (hidden? 'hidden': 'text') + '"');
     $c.html('').remove();
     $e = $(colorPicker).attr('id', id).addClass('mColorPicker').val(color).insertBefore($trigger);
 
-    //if (hidden) $trigger.css({
-    //  'border': '1px solid black',
-    //  'float': flt,
-    //  'width': width,
-    //  'height': height
-    //}).addClass($e.attr('class')).html('&nbsp;');
-
     $e.mSetInputColor(color);
-
+    if( sct < swatchlength ) { // HACK I know but this place has most of the data I need in one place
+      $('#mColorPickerSwatches .mPastColor').each(function(index,doM){
+          $(doM).bind('click',function(e) {
+              
+              var event_id = $(lastclicked).attr('e_id');
+              var sched_id = $(lastclicked).attr('s_id');
+              var a_id = $(lastclicked).attr('a_id');
+              
+              var dat;
+              if(index == 0) {
+                dat = { cmd : 'add_mood_color', 'json' : 1, 'event_id' : event_id , 'sched_id' : sched_id, 'account_id' : a_id, 'color_id' : 0, 'disable' : 1 };
+              } else {
+                dat = { cmd : 'add_mood_color', 'json' : 1, 'event_id' : event_id , 'sched_id' : sched_id, 'account_id' : a_id, 'color_id' : index };
+              }
+              $.ajax({
+                  type : 'POST',
+                  url : '/coa',
+                  data : dat,
+                  dataType: "xml",
+                  success : function(received) {
+                    if(index == 0) {
+                      $("input[type='image'][e_id=" + event_id +"][s_id=" + sched_id +"]").css('background-color', '#CCCCCC');
+                    } else {
+                      $("input[type='image'][e_id=" + event_id +"][s_id=" + sched_id +"]").css('background-color', $(doM).css('background-color'));
+                    }
+                  }
+              });        
+          });
+        sct++;
+      });
+    }
     return $e;
+  };
+
+  $.fn.mColorPicker.updateMoodOrder = function(sched_id,event_id) {
+    
+    $.ajax({
+            type : 'POST',
+            url : '/coa',
+            dataType: "xml",
+            data : { 'cmd' : 'update_mood_order', 'sched_id' : sched_id, 'event_id' : event_id },
+            success : function(received) {
+               
+            }
+          });       
   };
 
   $.fn.mColorPicker.drawPicker = function () {
@@ -256,8 +279,8 @@
     $w.attr({
       'id': 'mColorPickerWrapper'
     }).css({
-      'position':'relative',
-      'left' : '-73px'
+      'position':'relative'
+      //'left' : '-73px'
       //'border':'solid 1px gray'
     }).appendTo($mColorPicker);
 
@@ -265,7 +288,7 @@
       'id': 'mColorPickerSwatches'
     }).css({
     //  'border-right':'1px solid #000'
-    'left' : '-60px'
+    //'left' : '-60px'
     }).appendTo($w);
 
     $(div).addClass(
@@ -287,14 +310,22 @@
         'float':'left'
       }).html(
         '&nbsp;'
-      ).bind('click', { 'i' : i, 'o' : $o}, function(e) { });//alert(e.data.o.swatches[e.data.i].toLowerCase()); });
-
+      );
       
       if(i == 0) {
         boo.attr('title', 'Disable').css({ 'background-image' : 'url(/ts_includes/images/cancel.gif)', 'background-repeat' : 'no-repeat', 'background-position' : 'center'  });
       }
       boo.prependTo($s);
 
+/*      $("#cell" + i).bind('click', { 'i' : i, 'init' : $i, 'event_id' : event_id, 'sched_id' : sched_id }, function(e) {
+        $.ajax({
+            type : 'GET',
+            url : '/coa',
+            data : { cmd : 'add_mood_color', 'event_id' : event_id , 'sched_id' : sched_id, 'color_id' : e.data.i },
+            success : function(received) {}
+        });
+        
+      });*///alert(e.data.o.swatches[e.data.i].toLowerCase()); });
     }
     
     $mColorPickerInput.attr({
@@ -322,25 +353,25 @@
       'transparent'
     ).appendTo($f);
 
-    if ($i.showLogo) $l.attr({
-      'href': 'http://meta100.com/',
-      'title': $i.slogan,
-      'alt': $i.slogan,
-      'target': '_blank'
-    }).css({
-      'float': 'right'
-    }).appendTo($f);
+    //if ($i.showLogo) $l.attr({
+    //  'href': 'http://meta100.com/',
+    //  'title': $i.slogan,
+    //  'alt': $i.slogan,
+    //  'target': '_blank'
+    //}).css({
+    //  'float': 'right'
+    //}).appendTo($f);
     
-    $(img).attr({
-      'src': $o.imageFolder + 'meta100.png',
-      'title': $i.slogan,
-      'alt': $i.slogan
-    }).css({
-      'border': 0,
-      'border-left': '1px solid #aaa',
-      'right': 0,
-      'position': 'absolute'
-    }).appendTo($l);
+    //$(img).attr({
+    //  'src': $o.imageFolder + 'meta100.png',
+    //  'title': $i.slogan,
+    //  'alt': $i.slogan
+    //}).css({
+    //  'border': 0,
+    //  'border-left': '1px solid #aaa',
+    //  'right': 0,
+    //  'position': 'absolute'
+    //}).appendTo($l);
 
     $('.mNoLeftBorder').css({
       'border-left':0
@@ -379,6 +410,7 @@
     }).fadeIn("fast");
   
     $mColorPickerBg.show();
+
   
     if ($('#' + id).attr('data-text')) $o.color = $t.css('background-color');
     else $o.color = $i.css('background-color');
@@ -417,11 +449,11 @@
   };
 
   $.fn.mColorPicker.textColor = function (val) {
-
+  
     val = $.fn.mColorPicker.RGBtoHex(val);
-
+  
     if (typeof val == 'undefined' || val == 'transparent') return "black";
-
+  
     return (parseInt(val.substr(1, 2), 16) + parseInt(val.substr(3, 2), 16) + parseInt(val.substr(5, 2), 16) < 400)? 'white': 'black';
   };
 
@@ -430,39 +462,14 @@
     $o.changeColor = false;
   
     $.fn.mColorPicker.closePicker();
-    $.fn.mColorPicker.addToSwatch();
   
     $o.currentInput.trigger('colorpicked');
   };
-
-  $.fn.mColorPicker.addToSwatch = function (color) {
   
-    if (!$i.enhancedSwatches) return false;
-
-    var swatch = []
-        i = 0;
- 
-    if (typeof color == 'string') $o.color = color.toLowerCase();
-  
-    if ($o.color != 'transparent') swatch[0] = $o.color.toLowerCase();
-  
-    $('.mPastColor').each(function() {
-  
-      var $t = $(this);
-
-      $o.color = $t.css('background-color').toLowerCase();
-
-      if ($o.color != swatch[0] && $.fn.mColorPicker.RGBtoHex($o.color) != swatch[0] && $.fn.mColorPicker.hexToRGB($o.color) != swatch[0] && swatch.length < swatchlength) swatch[swatch.length] = $o.color;
-  
-      $(this).css('background-color', swatch[i++])
-    });
-
-  };
-
   $.fn.mColorPicker.whichColor = function (x, y, hex) {
-
+  
     var color = [255, 255, 255];
-
+  
     if (x < 32) {
   
       color[1] = x * 8;
@@ -488,18 +495,18 @@
       color[1] = 0;
       color[2] = 256 - (x - 160) * 8;
     }
-
+  
     for (var n = 0; n < 3; n++) {
-
+  
       if (y < 64) color[n] += (256 - color[n]) * (64 - y) / 64;
       else if (y <= 128) color[n] -= color[n] * (y - 64) / 64;
       else if (y > 128) color[n] = 256 - ( x / 192 * 256 );
   
       color[n] = Math.round(Math.min(color[n], 255));
-
+  
       if (hex == 'true') color[n] = $.fn.mColorPicker.decToHex(color[n]);
     }
-
+  
     if (hex == 'true') return "#" + color.join('');
     
     return "rgb(" + color.join(', ') + ')';
@@ -520,66 +527,66 @@
   }
 
   $.fn.mColorPicker.decToHex = function (color) {
-
+  
     var hex_char = "0123456789ABCDEF";
-
+  
     color = parseInt(color);
-
+  
     return String(hex_char.charAt(Math.floor(color / 16))) + String(hex_char.charAt(color - (Math.floor(color / 16) * 16)));
   }
-
+  
   $.fn.mColorPicker.RGBtoHex = function (color) {
-
+  
     var decToHex = "#",
         rgb;
-
+  
     color = color? color.toLowerCase(): false;
-
+  
     if (!color) return '';
     if (rHEX6.test(color)) return color.substr(0, 7);
     if (rHEX3.test(color)) return color.replace(rHEX, "$1$1$2$2$3$3").substr(0, 7);
-
+  
     if (rgb = color.match(rRGB)) {
-
+  
       for (var n = 1; n < 4; n++) decToHex += $.fn.mColorPicker.decToHex(rgb[n]);
     
       return decToHex;
     }
-
+  
     return $.fn.mColorPicker.colorTest(color);
   };
-
+  
   $.fn.mColorPicker.hexToRGB = function (color) {
-
+  
     color = color? color.toLowerCase(): false;
-
+  
     if (!color) return '';
     if (rRGB.test(color)) return color;
-
+  
     if (rHEX3.test(color)) {
-
+  
       if (!rHEX6.test(color)) color = color.replace(rHEX, "$1$1$2$2$3$3");
   
       return 'rgb(' + parseInt(color.substr(1, 2), 16) + ', ' + parseInt(color.substr(3, 2), 16) + ', ' + parseInt(color.substr(5, 2), 16) + ')';
     }
-
+  
     return $.fn.mColorPicker.colorTest(color);
   };
-
+  
   $i = $.fn.mColorPicker.init;
 
   $document.ready(function () {
-
+  
     $b = $('body');
-
+  //
     $.fn.mColorPicker.events();
-
-    if ($i.replace) {
-
-      $.fn.mColorPicker.start();
-
-      if (typeof $.fn.livequery == "function") $($i.replace).livequery($.fn.mColorPicker.start);
-      else $(document).live('ajaxSuccess.mColorPicker', $.fn.mColorPicker.start);
-    }
+  //
+  //  if ($i.replace) {
+  //
+  //    $.fn.mColorPicker.start();
+  //
+  //    if (typeof $.fn.livequery == "function") $($i.replace).livequery($.fn.mColorPicker.start);
+  //    else $(document).live('ajaxSuccess.mColorPicker', $.fn.mColorPicker.start);
+  //  }
   });
 })(jQuery);
